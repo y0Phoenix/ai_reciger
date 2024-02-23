@@ -271,7 +271,6 @@ dependencies = [
  "actix-web",
  "dotenv",
  "openai_dive",
- "reqwest",
  "serde",
  "serde_json",
  "sqlx",
