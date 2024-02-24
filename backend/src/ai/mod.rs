@@ -1,34 +1,19 @@
+use std::fmt::Display;
+
+use actix_web::ResponseError;
 use openai_dive::v1::{api::Client, models::Gpt35Engine, resources::chat::{ChatCompletionParameters, ChatCompletionResponse, ChatMessage, ChatMessageContent, Role}};
-use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Ingredients(Vec<Ingredient>);
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Instructions(Vec<String>);
+use crate::db::DBRecipe;
 
 #[derive(Debug)]
 pub struct MessageStreamError(pub String);
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Ingredient {
-    pub name: String,
-    pub quantity: String,
-    pub unit: String,
-    pub notes: String
-}
+impl ResponseError for MessageStreamError {}
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct RecipeResonse {
-    pub recipe: Recipe,
-    pub ingredients: Ingredients,
-    pub instructions: Instructions
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Recipe {
-    pub name: String,
-    pub servings: String
+impl Display for MessageStreamError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
 }
 
 #[derive(Debug)]
@@ -50,7 +35,7 @@ impl MessageStream {
     }
 }
 
-pub async fn get_ai_recipe(prompt: String) -> Result<RecipeResonse, MessageStreamError> {
+pub async fn get_ai_recipe(prompt: String) -> Result<DBRecipe, MessageStreamError> {
     let api_key = std::env::var("OPENAI_API_KEY").expect("$OPENAI_API_KEY is not set");
     let client = Client::new(api_key);
 
@@ -59,7 +44,7 @@ pub async fn get_ai_recipe(prompt: String) -> Result<RecipeResonse, MessageStrea
         messages: vec![
             ChatMessage {
                 role: Role::User,
-                content: ChatMessageContent::Text(format!("Give me a recipe based off of this {}. Can you format your response in JSON? With recipe, ingredients, and instructions fields. And format the ingredients by name, quantity, unit, and any notes like minced, chopped, optional. And for the quantity field, make sure it's a string, not a number. Also make sure the string fields name and servings are under their own recipe struct. Also if an ingredient doesn't have any notes please still include the notes field but just leave the string empty. Also if there are no instructions still have an empty array.", prompt).to_string()),
+                content: ChatMessageContent::Text(format!("Give me a recipe based off of this {}. Can you format your response in JSON? With recipe, ingredients, and instructions fields. And format the ingredients by name, quantity, unit, and any notes like minced, chopped, optional. And for the quantity field, make sure it's a string, not a number. Also make sure the string fields name and servings are under their own recipe struct. Also if an ingredient doesn't have any notes please still include the notes field but just leave the string empty. Format the instructions field with \\n characters, and if there are no instructions just have an emtpy string. Please make sure the JSON is valid too, no trailing commas", prompt).to_string()),
                 ..Default::default()
             },
         ],
@@ -74,6 +59,8 @@ pub async fn get_ai_recipe(prompt: String) -> Result<RecipeResonse, MessageStrea
         Err(_err) => return Err(_err),
     }; 
 
-    let json = serde_json::from_str::<RecipeResonse>(&message).unwrap();
+    // println!("{message}");
+
+    let json = serde_json::from_str::<DBRecipe>(&message).unwrap();
     Ok(json)
 }

@@ -6,7 +6,9 @@ use actix_web::{web::Data, App, HttpServer};
 
 mod handlers;
 mod db;
-pub mod ai;
+mod ai;
+mod types;
+
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
