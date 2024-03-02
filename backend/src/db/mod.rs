@@ -28,7 +28,7 @@ impl Display for DBError {
 
 impl ResponseError for DBError {}
 
-#[derive(Debug, FromRow, Serialize, Deserialize, Default)]
+#[derive(Debug, FromRow, Serialize, Deserialize, Default, Clone)]
 pub struct DBRecipe {
     pub recipe: Recipe,
     pub ingredients: sqlx::types::Json<Vec<Ingredient>>,
@@ -41,7 +41,7 @@ pub struct Ingredients(Vec<Ingredient>);
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Instructions(Vec<String>);
 
-#[derive(Debug, Serialize, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize, Default, Clone)]
 pub struct Ingredient {
     pub name: String,
     pub quantity: String,
@@ -49,8 +49,9 @@ pub struct Ingredient {
     pub notes: String
 }
 
-#[derive(Debug, Serialize, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize, Default, Clone)]
 pub struct Recipe {
+    pub id: i64,
     pub name: String,
     pub servings: String
 }

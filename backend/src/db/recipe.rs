@@ -8,6 +8,7 @@ pub async fn get_all_recipes(db_pool: Data<Pool<Postgres>>) -> Result<Vec<DBReci
     Ok(res.iter().map(|row| {
         DBRecipe {
             recipe: Recipe {
+                id: row.get("id"),
                 name: row.get("name"),
                 servings: row.get("servings"),
             },
@@ -39,10 +40,25 @@ pub async fn get_recipe(db_pool: Data<Pool<Postgres>>, recipe: &str) -> Result<D
         };
         Ok(DBRecipe {
             recipe: Recipe {
+                id: res.get("id"),
                 name: res.get("name"),
                 servings: res.get("servings"),
             },
             ingredients: res.get("ingredients"),
             instructions: res.get("instructions"),
         })
+}
+
+pub async fn update_recipe(db_pool: Data<Pool<Postgres>>, recipe: &DBRecipe) -> Result<DBRecipe, DBError> {
+    let Ok(_res) = query("UPDATE recipe SET name = $1, servings = $2, ingredients = $3, instructions = $4 WHERE id = $5")
+        .bind(&recipe.recipe.name)
+        .bind(&recipe.recipe.servings)
+        .bind(&recipe.ingredients)
+        .bind(&recipe.instructions)
+        .bind(&recipe.recipe.id)
+        .execute(&**db_pool)
+        .await else {
+            return Err(DBError::new("Failed to update recipe"));
+        };
+    Ok(recipe.clone())
 }

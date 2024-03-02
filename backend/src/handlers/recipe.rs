@@ -1,8 +1,8 @@
-use actix_web::{get, web::{Data, Json}, Responder, ResponseError};
+use actix_web::{get, post, web::{Data, Json}, Responder, ResponseError};
 use serde::{Deserialize, Serialize};
 use sqlx::{Pool, Postgres};
 
-use crate::{db::recipe::insert_recipe, types::Error};
+use crate::{db::{recipe::insert_recipe, DBRecipe}, types::Error};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct RecipeBody {
@@ -41,5 +41,13 @@ pub async fn get_recipe(db_pool: Data<Pool<Postgres>>, body: Json<GetRecipe>) ->
     match crate::db::recipe::get_recipe(db_pool, &body.name).await {
         Ok(recipe) => Ok(Json(recipe)),
         Err(err) => Err(Error::from(err))
+    }
+}
+
+#[post("/recipe/update")]
+pub async fn update_recipe(db_pool: Data<Pool<Postgres>>, body: Json<DBRecipe>) -> Result<impl Responder, impl ResponseError> {
+    match crate::db::recipe::update_recipe(db_pool, &body).await {
+        Ok(recipe) => Ok(Json(recipe)),
+        Err(err) => Err(err)
     }
 }
