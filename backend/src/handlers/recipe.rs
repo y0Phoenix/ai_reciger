@@ -30,3 +30,16 @@ pub async fn get_ai_recipe(db_pool: Data<Pool<Postgres>>, body: Json<RecipeBody>
         Err(err) => Err(Error::from(err))
     }
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+struct GetRecipe {
+    name: String
+}
+
+#[get("/recipe")]
+pub async fn get_recipe(db_pool: Data<Pool<Postgres>>, body: Json<GetRecipe>) -> Result<impl Responder, impl ResponseError> {
+    match crate::db::recipe::get_recipe(db_pool, &body.name).await {
+        Ok(recipe) => Ok(Json(recipe)),
+        Err(err) => Err(Error::from(err))
+    }
+}

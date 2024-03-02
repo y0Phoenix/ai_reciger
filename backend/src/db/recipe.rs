@@ -29,3 +29,20 @@ pub async fn insert_recipe(db_pool: Data<Pool<Postgres>>, recipe: &DBRecipe) -> 
         };
     Ok(())
 }
+
+pub async fn get_recipe(db_pool: Data<Pool<Postgres>>, recipe: &str) -> Result<DBRecipe, DBError> {
+    let Ok(res) = query("SELECT * FROM recipe WHERE (name = $1)")
+        .bind(recipe)
+        .fetch_one(&**db_pool)
+        .await else {
+            return Err(DBError::new("Recipe not found"));
+        };
+        Ok(DBRecipe {
+            recipe: Recipe {
+                name: res.get("name"),
+                servings: res.get("servings"),
+            },
+            ingredients: res.get("ingredients"),
+            instructions: res.get("instructions"),
+        })
+}
