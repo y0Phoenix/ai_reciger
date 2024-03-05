@@ -7,6 +7,7 @@ use sqlx::prelude::FromRow;
 use crate::types::ResponseMessage;
 
 pub mod recipe;
+pub mod user;
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct DBError(pub ResponseMessage);
@@ -31,11 +32,11 @@ impl ResponseError for DBError {}
 #[derive(Debug, FromRow, Serialize, Deserialize, Default, Clone)]
 pub struct DBRecipe {
     pub recipe: Recipe,
-    pub ingredients: sqlx::types::Json<Vec<Ingredient>>,
+    pub ingredients: sqlx::types::Json<Ingredients>,
     pub instructions: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default, Clone)]
 pub struct Ingredients(Vec<Ingredient>);
 
 #[derive(Debug, Serialize, Deserialize)]

@@ -22,6 +22,7 @@ pub async fn get_all_recipes(db_pool: Data<Pool<Postgres>>) -> Result<impl Respo
 pub async fn get_ai_recipe(db_pool: Data<Pool<Postgres>>, body: Json<RecipeBody>) -> Result<impl Responder, impl ResponseError> {
     match crate::ai::get_ai_recipe(body.prompt.clone()).await {
         Ok(recipe) => {
+            let recipe = recipe.into();
             match insert_recipe(db_pool, &recipe).await {
                 Ok(_) => Ok(Json(recipe)),
                 Err(err) => return Err(Error::from(err))

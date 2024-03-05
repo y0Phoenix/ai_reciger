@@ -2,8 +2,36 @@ use std::fmt::Display;
 
 use actix_web::ResponseError;
 use openai_dive::v1::{api::Client, models::Gpt35Engine, resources::chat::{ChatCompletionParameters, ChatCompletionResponse, ChatMessage, ChatMessageContent, Role}};
+use serde::{Deserialize, Serialize};
 
-use crate::db::DBRecipe;
+use crate::db::{DBRecipe, Ingredients, Recipe};
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct AIRecipe {
+    pub recipe: AiRecipeInfo,
+    pub instructions: String,
+    pub ingredients: Ingredients
+}
+
+impl Into<DBRecipe> for AIRecipe {
+    fn into(self) -> DBRecipe {
+        DBRecipe { 
+            recipe: Recipe {
+                id: 0,
+                name: self.recipe.name,
+                servings: self.recipe.servings,
+            }, 
+            ingredients: sqlx::types::Json(self.ingredients),
+            instructions: self.instructions 
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct AiRecipeInfo {
+    pub name: String,
+    pub servings: String
+}
 
 #[derive(Debug)]
 pub struct MessageStreamError(pub String);
@@ -35,7 +63,7 @@ impl MessageStream {
     }
 }
 
-pub async fn get_ai_recipe(prompt: String) -> Result<DBRecipe, MessageStreamError> {
+pub async fn get_ai_recipe(prompt: String) -> Result<AIRecipe, MessageStreamError> {
     let api_key = std::env::var("OPENAI_API_KEY").expect("$OPENAI_API_KEY is not set");
     let client = Client::new(api_key);
 
@@ -61,6 +89,6 @@ pub async fn get_ai_recipe(prompt: String) -> Result<DBRecipe, MessageStreamErro
 
     // println!("{message}");
 
-    let json = serde_json::from_str::<DBRecipe>(&message).unwrap();
+    let json = serde_json::from_str::<AIRecipe>(&message).unwrap();
     Ok(json)
 }
