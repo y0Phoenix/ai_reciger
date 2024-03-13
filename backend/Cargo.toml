@@ -14,4 +14,6 @@ dotenv = "0.15.0"
 actix-web = "4.5.1"
 sqlx = {version = "0.7.3", features = ["postgres", "runtime-tokio", "json"]}
 bcrypt = "0.15.0"
+jsonwebtoken = "9.2.0"
+chrono = "0.4.35"
 
