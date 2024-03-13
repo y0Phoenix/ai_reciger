@@ -21,7 +21,7 @@ struct ResUserBody {
 
 #[post("/user")]
 pub async fn create_user(db_pool: Data<Pool<Postgres>>, body: Json<ReqUserBody>) -> Result<impl Responder, impl ResponseError> {
-    match insert_user(db_pool, body).await {
+    match insert_user(&db_pool, body).await {
         Ok(user) => Ok(Json(user)),
         Err(err) => Err(err)
     }
@@ -29,7 +29,7 @@ pub async fn create_user(db_pool: Data<Pool<Postgres>>, body: Json<ReqUserBody>)
 
 #[get("/user")]
 pub async fn get_user(db_pool: Data<Pool<Postgres>>, body: Json<ReqUserBody>) -> Result<impl Responder, impl ResponseError> {
-    match crate::db::user::get_user(db_pool, body).await {
+    match crate::db::user::get_user(&db_pool, body).await {
         Ok(user) => {
             match token(&user.email) {
                 Ok(token) => Ok(Json(ResUserBody {
@@ -50,25 +50,7 @@ struct TokenHeader {
 }
 
 #[get("/user/auth")]
-pub async fn auth(db_pool: Data<Pool<Postgres>>, req: HttpRequest) -> Result<impl Responder, impl ResponseError> {
-    let token = match req.headers().get("x-auth-token") {
-        Some(token) => match token.to_str() {
-            Ok(token) => token.to_string(),
-            Err(err) => return Err(Error(crate::types::ResponseMessage::Error(err.to_string())))
-        },
-        None => return Err(Error(crate::types::ResponseMessage::Error("No token in headers".to_string())))
-    };
-    match crate::handlers::auth::auth(&token) {
-        Ok(email) => {
-            match crate::db::user::get_user(db_pool, Json(ReqUserBody {
-                name: None, 
-                email,
-                password: "".to_string()
-            })).await {
-                Ok(user) => Ok(Json(user)),
-                Err(err) => Err(Error(err.0))
-            }
-        },
-        Err(err) => Err(err),
-    }
+pub async fn auth(db_pool: Data<Pool<Postgres>>, req: HttpRequest) -> Result<Json<UserDB>, Error> {
+    let user = crate::handlers::auth::auth(&db_pool, req).await?;
+    Ok(Json(user))
 }

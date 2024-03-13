@@ -1,8 +1,12 @@
+use actix_web::{web::{Data, Json}, HttpRequest};
 use chrono::{Months, Utc};
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
+use sqlx::{Pool, Postgres};
 
-use crate::types::Error;
+use crate::{db::user::UserDB, types::Error};
+
+use super::user::ReqUserBody;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
@@ -10,9 +14,29 @@ struct Claims {
     pub email: String
 }
 
-pub fn auth(token: &String) -> Result<String, Error> {
-    match decrypt(token) {
-        Ok(email) => Ok(email),
+fn get_token(req: HttpRequest) -> Result<String, Error> {
+    match req.headers().get("x-auth-token") {
+        Some(token) => match token.to_str() {
+            Ok(token) => Ok(token.to_string()),
+            Err(err) => Err(Error(crate::types::ResponseMessage::Error(err.to_string())))
+        },
+        None => Err(Error(crate::types::ResponseMessage::Error("No token in headers".to_string())))
+    }
+}
+
+pub async fn auth(db_pool: &Data<Pool<Postgres>>, req: HttpRequest) -> Result<UserDB, Error> {
+    let token = get_token(req)?;
+    match decrypt(&token) {
+        Ok(email) => {
+            match crate::db::user::get_user(db_pool, Json(ReqUserBody {
+                name: None, 
+                email,
+                password: "".to_string()
+            })).await {
+                Ok(user) => Ok(user),
+                Err(err) => Err(Error(err.0))
+            }
+        },
         Err(_err) => Err(Error(crate::types::ResponseMessage::Error("Failed to authorize token".to_string()))),
     }
 }

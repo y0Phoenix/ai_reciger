@@ -27,7 +27,7 @@ fn decrypt(pass: String, hash: String) -> Result<bool, DBResponse> {
     }
 }
 
-pub async fn insert_user(db_pool: Data<Pool<Postgres>>, user: Json<ReqUserBody>) -> Result<UserDB, DBResponse> {
+pub async fn insert_user(db_pool: &Data<Pool<Postgres>>, user: Json<ReqUserBody>) -> Result<UserDB, DBResponse> {
     let pass = match encrypt(user.password.clone()) {
         Ok(pass) => pass,
         Err(err) => return Err(err),
@@ -36,7 +36,7 @@ pub async fn insert_user(db_pool: Data<Pool<Postgres>>, user: Json<ReqUserBody>)
         .bind(&user.name)
         .bind(&user.email)
         .bind(&pass)
-        .fetch_one(&**db_pool)
+        .fetch_one(&***db_pool)
         .await {
             Ok(res) => res,
             Err(_) => return Err(DBResponse::err("Failed to insert user into database")),
@@ -48,10 +48,10 @@ pub async fn insert_user(db_pool: Data<Pool<Postgres>>, user: Json<ReqUserBody>)
     })
 }
 
-pub async fn get_user(db_pool: Data<Pool<Postgres>>, user: Json<ReqUserBody>) -> Result<UserDB, DBResponse> {
+pub async fn get_user(db_pool: &Data<Pool<Postgres>>, user: Json<ReqUserBody>) -> Result<UserDB, DBResponse> {
     let res = match query("SELECT * FROM \"user\" WHERE email = $1")
     .bind(&user.email)
-    .fetch_one(&**db_pool)
+    .fetch_one(&***db_pool)
     .await {
         Ok(res) => res,
         Err(_) => return Err(DBResponse::err("Failed to fetch user from database")),
