@@ -3,7 +3,7 @@ use std::fmt::Display;
 use actix_web::ResponseError;
 use serde::{Deserialize, Serialize};
 
-use crate::{ai::MessageStreamError, db::DBError};
+use crate::{ai::MessageStreamError, db::DBResponse};
 
 #[derive(Debug, Default)]
 pub struct Error(pub ResponseMessage);
@@ -16,8 +16,8 @@ impl Display for Error {
     }
 }
 
-impl From<DBError> for Error {
-    fn from(value: DBError) -> Self {
+impl From<DBResponse> for Error {
+    fn from(value: DBResponse) -> Self {
         Self(value.0)
     }
 }

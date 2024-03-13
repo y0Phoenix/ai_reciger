@@ -10,15 +10,15 @@ pub mod recipe;
 pub mod user;
 
 #[derive(Debug, Default, Serialize, Deserialize)]
-pub struct DBError(pub ResponseMessage);
+pub struct DBResponse(pub ResponseMessage);
 
-impl DBError {
-    fn new(message: &str) -> Self {
+impl DBResponse {
+    fn err(message: &str) -> Self {
         Self(ResponseMessage::Error(message.to_string()))
     }
 }
 
-impl Display for DBError {
+impl Display for DBResponse {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self.0 {
             ResponseMessage::Error(msg) => write!(f, "Error {}", msg),
@@ -27,7 +27,7 @@ impl Display for DBError {
     }
 }
 
-impl ResponseError for DBError {}
+impl ResponseError for DBResponse {}
 
 #[derive(Debug, FromRow, Serialize, Deserialize, Default, Clone)]
 pub struct DBRecipe {
