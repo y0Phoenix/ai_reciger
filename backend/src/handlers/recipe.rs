@@ -2,7 +2,7 @@ use actix_web::{get, post, web::{Data, Json}, HttpRequest, Responder, ResponseEr
 use serde::{Deserialize, Serialize};
 use sqlx::{Pool, Postgres};
 
-use crate::{db::{recipe::insert_recipe, DBRecipe}, handlers::auth::auth, types::Error};
+use crate::{db::DBRecipe, handlers::auth::auth, types::Error};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct RecipeBody {
@@ -20,16 +20,10 @@ pub async fn get_all_recipes(db_pool: Data<Pool<Postgres>>, req: HttpRequest) ->
 }
 
 #[get("/recipe/ai")]
-pub async fn get_ai_recipe(db_pool: Data<Pool<Postgres>>, body: Json<RecipeBody>, req: HttpRequest) -> Result<impl Responder, impl ResponseError> {
-    let user = auth(&db_pool, req).await?;
+pub async fn get_ai_recipe(db_pool: Data<Pool<Postgres>>, body: Json<RecipeBody>, req: HttpRequest) -> Result<Json<DBRecipe>, impl ResponseError> {
+    let _user = auth(&db_pool, req).await?;
     match crate::ai::get_ai_recipe(body.prompt.clone()).await {
-        Ok(recipe) => {
-            let recipe = recipe.into();
-            match insert_recipe(&db_pool, &recipe, user).await {
-                Ok(_) => Ok(Json(recipe)),
-                Err(err) => return Err(Error::from(err))
-            }
-        },
+        Ok(recipe) => Ok(Json(recipe.into())),
         Err(err) => Err(Error::from(err))
     }
 }
@@ -53,6 +47,15 @@ pub async fn update_recipe(db_pool: Data<Pool<Postgres>>, body: Json<DBRecipe>, 
     let _user = auth(&db_pool, req).await?;
     match crate::db::recipe::update_recipe(&db_pool, &body).await {
         Ok(recipe) => Ok(Json(recipe)),
+        Err(err) => Err(Error::from(err))
+    }
+}
+
+#[post("/recipe")]
+pub async fn insert_recipe(db_pool: Data<Pool<Postgres>>, body: Json<DBRecipe>, req: HttpRequest) -> Result<impl Responder, impl ResponseError> {
+    let user = auth(&db_pool, req).await?;
+    match crate::db::recipe::insert_recipe(&db_pool, &body, user).await {
+        Ok(_) => Ok(format!("Recipe {} created successfully", body.recipe.name)),
         Err(err) => Err(Error::from(err))
     }
 }

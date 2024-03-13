@@ -1,5 +1,5 @@
 use dotenv::dotenv;
-use handlers::{recipe::{get_ai_recipe, get_all_recipes, get_recipe, update_recipe}, user::{auth, create_user, get_user}};
+use handlers::{recipe::{get_ai_recipe, get_all_recipes, get_recipe, insert_recipe, update_recipe}, user::{auth, create_user, get_user}};
 use sqlx::PgPool;
 use std::env;
 use actix_web::{web::Data, App, HttpServer};
@@ -24,6 +24,7 @@ async fn main() -> std::io::Result<()> {
             .service(create_user)
             .service(get_user)
             .service(auth)
+            .service(insert_recipe)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
