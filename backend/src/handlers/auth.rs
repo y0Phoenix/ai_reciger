@@ -28,7 +28,7 @@ pub async fn auth(db_pool: &Data<Pool<Postgres>>, req: HttpRequest) -> Result<Us
     let token = get_token(req)?;
     match decrypt(&token) {
         Ok(email) => {
-            match crate::db::user::get_user(db_pool, Json(ReqUserBody {
+            match crate::db::user::get_user(db_pool, &Json(ReqUserBody {
                 name: None, 
                 email,
                 password: "".to_string()

@@ -21,21 +21,27 @@ struct ResUserBody {
 
 #[post("/user")]
 pub async fn create_user(db_pool: Data<Pool<Postgres>>, body: Json<ReqUserBody>) -> Result<impl Responder, impl ResponseError> {
-    match insert_user(&db_pool, body).await {
-        Ok(user) => Ok(Json(user)),
+    match insert_user(&db_pool, &body).await {
+        Ok(mut user) => {
+            user.password = "".to_string();
+            Ok(Json(user))
+        },
         Err(err) => Err(err)
     }
 }
 
 #[get("/user")]
 pub async fn get_user(db_pool: Data<Pool<Postgres>>, body: Json<ReqUserBody>) -> Result<impl Responder, impl ResponseError> {
-    match crate::db::user::get_user(&db_pool, body).await {
-        Ok(user) => {
+    match crate::db::user::get_user(&db_pool, &body).await {
+        Ok(mut user) => {
             match token(&user.email) {
-                Ok(token) => Ok(Json(ResUserBody {
-                    user,
-                    token
-                })),
+                Ok(token) => {
+                    user.password = "".to_string();
+                    Ok(Json(ResUserBody {
+                        user,
+                        token
+                    }))
+                },
                 Err(err) => Err(err)
             }
         },

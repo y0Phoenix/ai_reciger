@@ -27,7 +27,7 @@ fn decrypt(pass: String, hash: String) -> Result<bool, DBResponse> {
     }
 }
 
-pub async fn insert_user(db_pool: &Data<Pool<Postgres>>, user: Json<ReqUserBody>) -> Result<UserDB, DBResponse> {
+pub async fn insert_user(db_pool: &Data<Pool<Postgres>>, user: &Json<ReqUserBody>) -> Result<UserDB, DBResponse> {
     let pass = match encrypt(user.password.clone()) {
         Ok(pass) => pass,
         Err(err) => return Err(err),
@@ -44,11 +44,11 @@ pub async fn insert_user(db_pool: &Data<Pool<Postgres>>, user: Json<ReqUserBody>
     Ok(UserDB {
         name: res.get("name"),
         email: res.get("email"),
-        password: "".to_string(),
+        password: res.get("password"),
     })
 }
 
-pub async fn get_user(db_pool: &Data<Pool<Postgres>>, user: Json<ReqUserBody>) -> Result<UserDB, DBResponse> {
+pub async fn get_user(db_pool: &Data<Pool<Postgres>>, user: &Json<ReqUserBody>) -> Result<UserDB, DBResponse> {
     let res = match query("SELECT * FROM \"user\" WHERE email = $1")
     .bind(&user.email)
     .fetch_one(&***db_pool)
@@ -62,6 +62,6 @@ pub async fn get_user(db_pool: &Data<Pool<Postgres>>, user: Json<ReqUserBody>) -
     Ok(UserDB {
         name: res.get("name"),
         email: res.get("email"),
-        password: "".to_string(),
+        password: res.get("password"),
     })
 }
