@@ -20,11 +20,11 @@ async fn main() -> std::io::Result<()> {
             .service(get_all_recipes)
             .service(get_ai_recipe)
             .service(get_recipe)
+            .service(insert_recipe)
             .service(update_recipe)
             .service(create_user)
             .service(get_user)
             .service(auth)
-            .service(insert_recipe)
     })
     .bind(("127.0.0.1", 8080))?
     .run()

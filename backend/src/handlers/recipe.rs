@@ -1,8 +1,9 @@
 use actix_web::{get, post, web::{Data, Json}, HttpRequest, Responder, ResponseError};
+use chrono::Local;
 use serde::{Deserialize, Serialize};
 use sqlx::{Pool, Postgres};
 
-use crate::{db::DBRecipe, handlers::auth::auth, types::Error};
+use crate::{db::{DBRecipe, DB_DATE_FORMAT}, handlers::auth::auth, types::Error};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct RecipeBody {
@@ -43,8 +44,9 @@ pub async fn get_recipe(db_pool: Data<Pool<Postgres>>, body: Json<GetRecipe>, re
 }
 
 #[post("/recipe/update")]
-pub async fn update_recipe(db_pool: Data<Pool<Postgres>>, body: Json<DBRecipe>, req: HttpRequest) -> Result<impl Responder, impl ResponseError> {
+pub async fn update_recipe(db_pool: Data<Pool<Postgres>>, mut body: Json<DBRecipe>, req: HttpRequest) -> Result<impl Responder, impl ResponseError> {
     let _user = auth(&db_pool, req).await?;
+    body.modified = Local::now().format(DB_DATE_FORMAT).to_string();
     match crate::db::recipe::update_recipe(&db_pool, &body).await {
         Ok(recipe) => Ok(Json(recipe)),
         Err(err) => Err(Error::from(err))

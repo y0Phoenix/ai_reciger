@@ -1,6 +1,7 @@
 use std::fmt::Display;
 
 use actix_web::ResponseError;
+use chrono::Local;
 use openai_dive::v1::{api::Client, models::Gpt35Engine, resources::chat::{ChatCompletionParameters, ChatCompletionResponse, ChatMessage, ChatMessageContent, Role}};
 use serde::{Deserialize, Serialize};
 
@@ -22,7 +23,8 @@ impl Into<DBRecipe> for AIRecipe {
                 servings: self.recipe.servings,
             }, 
             ingredients: sqlx::types::Json(self.ingredients),
-            instructions: self.instructions 
+            instructions: self.instructions,
+            modified: Local::now().format("%m-%d-%Y %H:%M").to_string()
         }
     }
 }

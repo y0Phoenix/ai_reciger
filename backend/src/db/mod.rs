@@ -1,13 +1,14 @@
 use std::fmt::Display;
-
 use actix_web::ResponseError;
 use serde::{Deserialize, Serialize};
-use sqlx::prelude::FromRow;
+use sqlx::{postgres::PgRow, prelude::FromRow, Row};
 
 use crate::types::ResponseMessage;
 
 pub mod recipe;
 pub mod user;
+
+pub const DB_DATE_FORMAT: &str = "%Y-%m-%d";
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct DBResponse(pub ResponseMessage);
@@ -28,12 +29,28 @@ impl Display for DBResponse {
 }
 
 impl ResponseError for DBResponse {}
-
 #[derive(Debug, FromRow, Serialize, Deserialize, Default, Clone)]
 pub struct DBRecipe {
     pub recipe: Recipe,
     pub ingredients: sqlx::types::Json<Ingredients>,
     pub instructions: String,
+    pub modified: String,
+}
+
+
+impl From<PgRow> for DBRecipe {
+    fn from(value: PgRow) -> Self {
+        Self {
+            recipe: Recipe {
+                id: value.get("id"),
+                name: value.get("name"),
+                servings: value.get("servings"),
+            },
+            instructions: value.get("instructions"),
+            ingredients: value.get("ingredients"),
+            modified: value.get("modified"),
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Default, Clone)]
