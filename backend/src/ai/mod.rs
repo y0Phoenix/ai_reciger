@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use actix_web::ResponseError;
 use chrono::Local;
-use openai_dive::v1::{api::Client, models::Gpt35Engine, resources::chat::{ChatCompletionParameters, ChatCompletionResponse, ChatMessage, ChatMessageContent, Role}};
+use openai_dive::v1::{api::Client, error::APIError, models::Gpt35Engine, resources::chat::{ChatCompletionParameters, ChatCompletionResponse, ChatMessage, ChatMessageContent, Role}};
 use serde::{Deserialize, Serialize};
 
 use crate::db::{DBRecipe, Ingredients, Recipe};
@@ -24,7 +24,7 @@ impl Into<DBRecipe> for AIRecipe {
             }, 
             ingredients: sqlx::types::Json(self.ingredients),
             instructions: self.instructions,
-            modified: Local::now().format("%m-%d-%Y %H:%M").to_string()
+            modified: Local::now().format("%Y-%m-%d").to_string()
         }
     }
 }
@@ -69,7 +69,7 @@ pub async fn get_ai_recipe(prompt: String) -> Result<AIRecipe, MessageStreamErro
     let api_key = std::env::var("OPENAI_API_KEY").expect("$OPENAI_API_KEY is not set");
     let client = Client::new(api_key);
 
-    let parameters = ChatCompletionParameters {
+    let params = ChatCompletionParameters {
         model: Gpt35Engine::Gpt35Turbo.to_string(),
         messages: vec![
             ChatMessage {
@@ -82,15 +82,30 @@ pub async fn get_ai_recipe(prompt: String) -> Result<AIRecipe, MessageStreamErro
         ..Default::default()
     };
 
-    let result = client.chat().create(parameters).await.unwrap();
+    let mut i = 0;
+    let recipe = loop {
+        let message = match fetch_recipe(&client, params.clone()).await {
+            Ok(message) => message,
+            Err(err) => return Err(MessageStreamError(err.to_string())),
+        };
 
-    let message = match MessageStream::new(&result) {
-        Ok(message) => message.message,
-        Err(_err) => return Err(_err),
-    }; 
+        let Ok(json) = serde_json::from_str::<AIRecipe>(&message) else {
+            i += 1;
+            if i > 3 {
+                return Err(MessageStreamError("API Error AI responses are invalid try again later".to_string()));
+            }
+            continue;
+        };
+        break json;
+    };
+    Ok(recipe)
+}
 
-    // println!("{message}");
+async fn fetch_recipe(client: &Client, params: ChatCompletionParameters) -> Result<String, APIError> {
+    let result = client.chat().create(params).await?;
 
-    let json = serde_json::from_str::<AIRecipe>(&message).unwrap();
-    Ok(json)
+    match MessageStream::new(&result) {
+        Ok(message) => Ok(message.message),
+        Err(_err) => return Err(APIError::StreamError("Failed to create message stream from API response".to_string())),
+    }
 }

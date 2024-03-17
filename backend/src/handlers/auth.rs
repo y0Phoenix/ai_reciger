@@ -1,5 +1,5 @@
 use actix_web::{web::{Data, Json}, HttpRequest};
-use chrono::{Months, Utc};
+use chrono::{Days, Months, Utc};
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 use sqlx::{Pool, Postgres};
@@ -31,7 +31,8 @@ pub async fn auth(db_pool: &Data<Pool<Postgres>>, req: HttpRequest) -> Result<Us
             match crate::db::user::get_user(db_pool, &Json(ReqUserBody {
                 name: None, 
                 email,
-                password: "".to_string()
+                password: "".to_string(),
+                remember: None
             })).await {
                 Ok(user) => Ok(user),
                 Err(err) => Err(Error(err.0))
@@ -41,9 +42,15 @@ pub async fn auth(db_pool: &Data<Pool<Postgres>>, req: HttpRequest) -> Result<Us
     }
 }
 
-pub fn token(email: &String) -> Result<String, Error> {
+pub fn token(email: &String, remember: bool) -> Result<String, Error> {
+    let exp = if remember {
+        Utc::now().checked_add_months(Months::new(12)).unwrap().timestamp()
+    }
+    else {
+        Utc::now().checked_add_days(Days::new(7)).unwrap().timestamp()
+    };
     match encode(&Header::default(), &Claims { 
-            exp: Utc::now().checked_add_months(Months::new(1)).unwrap().timestamp() as usize,
+            exp: exp as usize,
             email: email.to_string()
         }, &EncodingKey::from_secret(b"my_secret_token")) {
         Ok(token) => Ok(token),

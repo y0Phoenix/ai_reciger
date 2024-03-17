@@ -9,6 +9,7 @@ use super::auth::token;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ReqUserBody {
     pub name: Option<String>,
+    pub remember: Option<bool>,
     pub email: String,
     pub password: String
 }
@@ -32,9 +33,10 @@ pub async fn create_user(db_pool: Data<Pool<Postgres>>, body: Json<ReqUserBody>)
 
 #[get("/user")]
 pub async fn get_user(db_pool: Data<Pool<Postgres>>, body: Json<ReqUserBody>) -> Result<impl Responder, impl ResponseError> {
+    let Some(remember) = body.remember else { return Err(Error(crate::types::ResponseMessage::Error("Invalid request body, missing \"remember\" field".to_string()))) };
     match crate::db::user::get_user(&db_pool, &body).await {
         Ok(mut user) => {
-            match token(&user.email) {
+            match token(&user.email, remember) {
                 Ok(token) => {
                     user.password = "".to_string();
                     Ok(Json(ResUserBody {
@@ -57,6 +59,7 @@ struct TokenHeader {
 
 #[get("/user/auth")]
 pub async fn auth(db_pool: Data<Pool<Postgres>>, req: HttpRequest) -> Result<Json<UserDB>, Error> {
-    let user = crate::handlers::auth::auth(&db_pool, req).await?;
+    let mut user = crate::handlers::auth::auth(&db_pool, req).await?;
+    user.password = "".to_string();
     Ok(Json(user))
 }
