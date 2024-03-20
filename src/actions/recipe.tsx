@@ -72,6 +72,29 @@ export const clearCurrRecipe = () => (dispatch: ThunkDispatch<State, undefined, 
     });
 }
 
+export const insertRecipe = (recipe: Recipe, naigate: NavigateFunction) => async (dispatch: ThunkDispatch<State, undefined, RecipeAction>) => {
+    try {
+        dispatch(loading());
+        const res = await axios.post(`/recipe`, recipe);
+        dispatch(stopLoading());
+
+        // if (res.data.toasts) setToastFromRes(res.data.toasts, dispatch);
+
+        dispatch({
+            type: CURR_RECIPE,
+            payload: res.data
+        });
+        naigate(`/recipe/${res.data.recipe.id}`);
+    } catch (err: any) {
+        dispatch(stopLoading());
+        dispatch({
+            type: GET_RECIPES_FAIL,
+            payload: err.response.data
+        });
+        // if (err.response.data?.toasts) setToastFromRes(err.response.data?.toasts, dispatch);
+    }
+}
+
 export const editRecipe = (recipe: Recipe) => async (dispatch: ThunkDispatch<State, undefined, RecipeAction>) => {
     try {
         dispatch(loading());

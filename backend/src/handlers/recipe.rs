@@ -57,7 +57,7 @@ pub async fn update_recipe(db_pool: Data<Pool<Postgres>>, mut body: Json<DBRecip
 pub async fn insert_recipe(db_pool: Data<Pool<Postgres>>, body: Json<DBRecipe>, req: HttpRequest) -> Result<impl Responder, impl ResponseError> {
     let user = auth(&db_pool, &req).await?;
     match crate::db::recipe::insert_recipe(&db_pool, &body, user).await {
-        Ok(_) => Ok(format!("Recipe {} created successfully", body.recipe.name)),
+        Ok(recipe) => Ok(Json(recipe)),
         Err(err) => Err(Error::from(err))
     }
 }

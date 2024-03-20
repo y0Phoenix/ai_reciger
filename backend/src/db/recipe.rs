@@ -10,16 +10,20 @@ pub async fn get_all_recipes(db_pool: &Data<Pool<Postgres>>, user: UserDB) -> Re
     Ok(res.into_iter().map(|row| DBRecipe::from(row)).collect())
 }
 
-pub async fn insert_recipe(db_pool: &Data<Pool<Postgres>>, recipe: &DBRecipe, user: UserDB) -> Result<(), DBResponse> {
-    let _res = query("INSERT INTO recipe (name, servings, instructions, ingredients, user_email) VALUES ($1, $2, $3, $4, $5)")
+pub async fn insert_recipe(db_pool: &Data<Pool<Postgres>>, recipe: &DBRecipe, user: UserDB) -> Result<DBRecipe, DBResponse> {
+    match query("INSERT INTO recipe (name, servings, instructions, ingredients, user_email) VALUES ($1, $2, $3, $4, $5) RETURNING *")
         .bind(&recipe.recipe.name)
         .bind(&recipe.recipe.servings)
         .bind(&recipe.instructions)
         .bind(&recipe.ingredients)
         .bind(user.email)
-        .execute(&***db_pool)
-        .await.unwrap();
-    Ok(())
+        .fetch_one(&***db_pool)
+        .await {
+            Ok(res) => {
+                Ok(DBRecipe::from(res))
+            },
+            Err(err) => Err(DBResponse::err(err.to_string().as_str())),
+        }
 }
 
 pub async fn get_recipe(db_pool: &Data<Pool<Postgres>>, id: i64, user: UserDB) -> Result<DBRecipe, DBResponse> {

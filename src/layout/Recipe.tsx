@@ -5,7 +5,7 @@ import { Button, Card, Col, Container, Form, Row } from 'react-bootstrap';
 import State from '../types/State';
 import { ConnectedProps, connect } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { clearCurrRecipe, deleteRecipe, editRecipe, getRecipeById } from '../actions/recipe';
+import { clearCurrRecipe, deleteRecipe, editRecipe, getRecipeById, insertRecipe } from '../actions/recipe';
 import { Ingredient, Recipe } from '../types/Recipe';
 import LoadingButton from '../components/LoadingButton';
 import { printPage } from '../utils/printPage';
@@ -14,11 +14,11 @@ const mapStateToProps = (state: State) => ({
     curr_recipe: state.recipe.currRecipe,
 });
 
-const connector = connect(mapStateToProps, { getRecipeById, clearCurrRecipe, editRecipe, deleteRecipe });
+const connector = connect(mapStateToProps, { getRecipeById, clearCurrRecipe, editRecipe, deleteRecipe, insertRecipe });
 
 type Props = ConnectedProps<typeof connector>;
 
-const RecipePage: React.FC<Props> = ({ curr_recipe, editRecipe, deleteRecipe, getRecipeById }) => {
+const RecipePage: React.FC<Props> = ({ curr_recipe, editRecipe, deleteRecipe, getRecipeById, insertRecipe }) => {
     const [recipe, setRecipe] = useState<Recipe>(curr_recipe);
     const { pathname } = useLocation();
 
@@ -41,22 +41,27 @@ const RecipePage: React.FC<Props> = ({ curr_recipe, editRecipe, deleteRecipe, ge
             ingredients: newIngredients
         }));
     };
+
+    const id = Number(pathname.split('/recipe/').join(''));
+
+    const navigate = useNavigate();
     
     const handleDelete = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         e.preventDefault();
         deleteRecipe(curr_recipe.recipe.id)
     };
 
-    const handleEdit = () => editRecipe(recipe);
-
     const handlePrint = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         e.preventDefault();
         printPage(recipe);
     }
 
-    const id = Number(pathname.split('/recipe/').join(''));
-
-    const navigate = useNavigate();
+    const handleSave = () => {
+        if (isNaN(id) || id == 0 || id == -1) {
+            return insertRecipe(recipe, navigate);
+        }
+        editRecipe(recipe);
+    }
 
     useEffect(() => {
         if (curr_recipe.recipe.id == -1) getRecipeById(id, navigate);
@@ -92,7 +97,7 @@ const RecipePage: React.FC<Props> = ({ curr_recipe, editRecipe, deleteRecipe, ge
                                 Delete
                                 <i className="fa-solid fa-trash-can ms-1"></i>
                             </Button>
-                            <LoadingButton className="me-1" variant="primary" callback={() => handleEdit()} text='Save' iconClass='fa-solid fa-cloud-arrow-up ms-1' type='button'/>
+                            <LoadingButton className="me-1" variant="primary" callback={() => handleSave()} text='Save' iconClass='fa-solid fa-cloud-arrow-up ms-1' type='button'/>
                             <Button variant="success" onClick={handlePrint}>
                                 Print
                                 <i className="fa-solid fa-print ms-1"></i>
