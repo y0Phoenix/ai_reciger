@@ -17,20 +17,15 @@ export const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
 export const LOGIN_FAIL = 'LOGIN_FAIL';
 export const LOGOUT = 'LOGOUT';
 
-// ingredient types
-export const GET_INGREDIENTS = 'GET_INGREDIENTS';
-export const FILTER_INGREDIENTS = 'FILTER_INGREDIENTS';
-export const RESET_FILTER_INGREDIENTS = 'RESET_FILTER_INGREDIENTS';
-export const GET_INGREDIENT = 'GET_INGREDIENT';
-export const GET_INGREDIENTS_FAIL = 'GET_INGREDIENTS_FAIL';
-export const CLEAR_INGREDIENTS = 'CLEAR_INGREDIENTS';
-
 // recipe types
 export const GET_RECIPES = 'GET_RECIPES';
 export const FILTER_RECIPES = 'FILTER_RECIPES';
 export const RESET_FILTER_RECIPES = 'RESET_FILTER_RECIPES';
 export const GET_RECIPES_FAIL = 'GET_RECIPES_FAIL';
 export const CLEAR_RECIPES = 'CLEAR_RECIPES';
+export const CURR_RECIPE = 'CURR_RECIPE';
+export const CLEAR_CURR_RECIPE = 'CLEAR_CURR_RECIPE';
+export const REMOVE_RECIPE = 'REMOVE_RECIPE';
 
 /**
  * legacy/needs proper implementation 
@@ -40,22 +35,12 @@ export const CLEAR_RECIPES = 'CLEAR_RECIPES';
  */
 
 // modal types
-/**
- * @description set the ingredient modal only
- */
-export const SET_INGREDIENT_MODAL = 'SET_INGREDIENT_MODAL';
-/**
- * @description set the confirm modal only
- */
-export const SET_CONFIRM_MODAL = 'SET_CONFIRM_MODAL';
-/**
- * @description removes a singel modal type from state
- */
-export const REMOVE_MODAL = 'REMOVE_MODAL';
-/**
- * @description resets the entire modal state to initial
- */
-export const RESET_MODAL = 'RESET_MODAL';
+export const SHOW_LOGIN_MODAL = 'SHOW_LOGIN_MODAL';
+export const CLOSE_LOGIN_MODAL = 'CLOSE_LOGIN_MODAL';
+export const SHOW_REGISTER_MODAL = 'SHOW_REGISTER_MODAL';
+export const CLOSE_REGISTER_MODAL = 'CLOSE_REGISTER_MODAL';
+export const SHOW_AI_MODAL = 'SHOW_AI_MODAL';
+export const CLOSE_AI_MODAL = 'CLOSE_AI_MODAL';
 
 // toast types
 export const SET_TOAST = 'SET_TOAST';

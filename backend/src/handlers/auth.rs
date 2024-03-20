@@ -14,7 +14,7 @@ struct Claims {
     pub email: String
 }
 
-fn get_token(req: HttpRequest) -> Result<String, Error> {
+pub fn get_token(req: &HttpRequest) -> Result<String, Error> {
     match req.headers().get("x-auth-token") {
         Some(token) => match token.to_str() {
             Ok(token) => Ok(token.to_string()),
@@ -24,7 +24,7 @@ fn get_token(req: HttpRequest) -> Result<String, Error> {
     }
 }
 
-pub async fn auth(db_pool: &Data<Pool<Postgres>>, req: HttpRequest) -> Result<UserDB, Error> {
+pub async fn auth(db_pool: &Data<Pool<Postgres>>, req: &HttpRequest) -> Result<UserDB, Error> {
     let token = get_token(req)?;
     match decrypt(&token) {
         Ok(email) => {

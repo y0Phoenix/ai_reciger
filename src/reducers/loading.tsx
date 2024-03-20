@@ -7,14 +7,14 @@ interface Action {
     type: string
 }
 
-export default function loading(state = {bool: false}, action: Action) {
+export default function loading(state = false, action: Action) {
     const {type} = action;
     switch (type) {
         case LOADING:
-            state = {bool: true}
+            state = true
             return state;
         case STOP_LOADING:
-            state = {bool: false};
+            state = false;
             return state;
         default:
             return state;

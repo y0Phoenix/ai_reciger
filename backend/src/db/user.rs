@@ -20,7 +20,7 @@ fn encrypt(pass: String) -> Result<String, DBResponse> {
     }
 }
 
-fn decrypt(pass: String, hash: String) -> Result<bool, DBResponse> {
+pub fn decrypt(pass: String, hash: String) -> Result<bool, DBResponse> {
     match verify(pass, &hash) {
         Ok(is_pass) => Ok(is_pass),
         Err(_) => Err(DBResponse::err("Failed to decrypt password!")),
@@ -56,9 +56,7 @@ pub async fn get_user(db_pool: &Data<Pool<Postgres>>, user: &Json<ReqUserBody>) 
         Ok(res) => res,
         Err(_) => return Err(DBResponse::err("Failed to fetch user from database")),
     };
-    if let Err(_) = decrypt(user.password.clone(), res.get("password")) {
-        return Err(DBResponse::err("Passwords don't match"));
-    }
+    
     Ok(UserDB {
         name: res.get("name"),
         email: res.get("email"),

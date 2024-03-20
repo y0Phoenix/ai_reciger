@@ -17,6 +17,9 @@ impl DBResponse {
     fn err(message: &str) -> Self {
         Self(ResponseMessage::Error(message.to_string()))
     }
+    fn succ(message: &str) -> Self {
+        Self(ResponseMessage::Ok(message.to_string()))
+    }
 }
 
 impl Display for DBResponse {

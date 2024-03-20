@@ -22,9 +22,9 @@ pub async fn insert_recipe(db_pool: &Data<Pool<Postgres>>, recipe: &DBRecipe, us
     Ok(())
 }
 
-pub async fn get_recipe(db_pool: &Data<Pool<Postgres>>, recipe: &str, user: UserDB) -> Result<DBRecipe, DBResponse> {
-    match query("SELECT * FROM recipe WHERE name = $1 AND user_email = $2")
-        .bind(recipe)
+pub async fn get_recipe(db_pool: &Data<Pool<Postgres>>, id: i64, user: UserDB) -> Result<DBRecipe, DBResponse> {
+    match query("SELECT * FROM recipe WHERE id = $1 AND user_email = $2")
+        .bind(id)
         .bind(user.email)
         .fetch_one(&***db_pool)
         .await {
@@ -45,4 +45,15 @@ pub async fn update_recipe(db_pool: &Data<Pool<Postgres>>, recipe: &DBRecipe) ->
             return Err(DBResponse::err("Failed to update recipe"));
         };
     Ok(recipe.clone())
+}
+
+pub async fn delete_recipe(db_pool: &Data<Pool<Postgres>>, id: i64, user: UserDB) -> Result<DBResponse, DBResponse> {
+    let Ok(_res) = query("DELETE FROM recipe WHERE id = $1 AND user_email = $2")
+        .bind(id)
+        .bind(user.email)
+        .execute(&***db_pool)
+        .await else {
+            return Err(DBResponse::err("Failed to delete recipe"));
+        };
+    Ok(DBResponse::succ("Successfully deleted recipe"))
 }

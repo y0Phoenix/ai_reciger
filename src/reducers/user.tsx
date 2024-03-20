@@ -27,7 +27,7 @@ import { UserAction, UserState } from '../types/User';
             case USER_LOADED:
                 localStorage.setItem('token', payload.token);
                 setAuthToken(localStorage.token);
-                state = { ...state, isAuthenticated: payload.isAuthenticated, user: payload.data, token: payload.token }; 
+                state = { ...state, isAuthenticated: payload.is_authenticated, user: payload.user, token: payload.token }; 
                 return state;
             case USER_UPDATED:
                 state = {...state, isAuthenticated: true};

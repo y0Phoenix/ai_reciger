@@ -16,8 +16,8 @@ type UserAction = {
 };
 
 type UserActionPayload = {
-    isAuthenticated: boolean,
-    data: User,
+    is_authenticated: boolean,
+    user: User,
     token: string
 };
 
