@@ -9,7 +9,7 @@ export class Recipe {
     recipe: RecipeInfo = {
         name: "",
         servings: "",
-        id: -1
+        id: ""
     }
     instructions: string = ""
     ingredients: Ingredient[] = [{
@@ -25,7 +25,7 @@ export class Recipe {
 type RecipeInfo = {
     name: string,
     servings: string,
-    id: number
+    id: string
 }
 
 type Ingredient = {

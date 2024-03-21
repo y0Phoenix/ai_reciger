@@ -54,7 +54,10 @@ pub async fn get_user(db_pool: &Data<Pool<Postgres>>, user: &Json<ReqUserBody>) 
     .fetch_one(&***db_pool)
     .await {
         Ok(res) => res,
-        Err(_) => return Err(DBResponse::err("Failed to fetch user from database")),
+        Err(err) => {
+            eprintln!("{}", err.to_string());
+            return Err(DBResponse::err("Failed to fetch user from database"))
+        },
     };
     
     Ok(UserDB {

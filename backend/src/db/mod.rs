@@ -72,7 +72,7 @@ pub struct Ingredient {
 
 #[derive(Debug, Serialize, Deserialize, Default, Clone)]
 pub struct Recipe {
-    pub id: i64,
+    pub id: String,
     pub name: String,
     pub servings: String
 }

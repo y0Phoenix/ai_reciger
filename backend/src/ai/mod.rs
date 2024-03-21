@@ -18,7 +18,7 @@ impl Into<DBRecipe> for AIRecipe {
     fn into(self) -> DBRecipe {
         DBRecipe { 
             recipe: Recipe {
-                id: 0,
+                id: "".to_string(),
                 name: self.recipe.name,
                 servings: self.recipe.servings,
             }, 

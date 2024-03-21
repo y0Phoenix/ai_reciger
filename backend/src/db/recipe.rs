@@ -26,7 +26,7 @@ pub async fn insert_recipe(db_pool: &Data<Pool<Postgres>>, recipe: &DBRecipe, us
         }
 }
 
-pub async fn get_recipe(db_pool: &Data<Pool<Postgres>>, id: i64, user: UserDB) -> Result<DBRecipe, DBResponse> {
+pub async fn get_recipe(db_pool: &Data<Pool<Postgres>>, id: String, user: UserDB) -> Result<DBRecipe, DBResponse> {
     match query("SELECT * FROM recipe WHERE id = $1 AND user_email = $2")
         .bind(id)
         .bind(user.email)
@@ -51,7 +51,7 @@ pub async fn update_recipe(db_pool: &Data<Pool<Postgres>>, recipe: &DBRecipe) ->
     Ok(recipe.clone())
 }
 
-pub async fn delete_recipe(db_pool: &Data<Pool<Postgres>>, id: i64, user: UserDB) -> Result<DBResponse, DBResponse> {
+pub async fn delete_recipe(db_pool: &Data<Pool<Postgres>>, id: String, user: UserDB) -> Result<DBResponse, DBResponse> {
     let Ok(_res) = query("DELETE FROM recipe WHERE id = $1 AND user_email = $2")
         .bind(id)
         .bind(user.email)
