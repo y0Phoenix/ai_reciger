@@ -21,7 +21,7 @@ struct ResUserBody {
     pub is_authenticated: bool
 }
 
-#[post("/user")]
+#[post("/api/user")]
 pub async fn create_user(db_pool: Data<Pool<Postgres>>, body: Json<ReqUserBody>) -> Result<impl Responder, impl ResponseError> {
     match insert_user(&db_pool, &body).await {
         Ok(mut user) => {
@@ -32,7 +32,7 @@ pub async fn create_user(db_pool: Data<Pool<Postgres>>, body: Json<ReqUserBody>)
     }
 }
 
-#[post("/user/auth")]
+#[post("/api/user/auth")]
 pub async fn get_user(db_pool: Data<Pool<Postgres>>, body: Json<ReqUserBody>) -> Result<impl Responder, impl ResponseError> {
     let Some(remember) = body.remember else { return Err(Error(crate::types::ResponseMessage::Error("Invalid request body, missing \"remember\" field".to_string()))) };
     match crate::db::user::get_user(&db_pool, &body).await {
@@ -66,7 +66,7 @@ struct TokenHeader {
     pub token: String
 }
 
-#[get("/user")]
+#[get("/api/user")]
 pub async fn auth(db_pool: Data<Pool<Postgres>>, req: HttpRequest) -> Result<Json<ResUserBody>, Error> {
     let mut user = crate::handlers::auth::auth(&db_pool, &req).await?;
     let token = get_token(&req)?;

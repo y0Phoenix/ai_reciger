@@ -10,7 +10,7 @@ struct RecipeBody {
     pub prompt: String
 }
 
-#[get("/recipe/all")]
+#[get("/api/recipe/all")]
 pub async fn get_all_recipes(db_pool: Data<Pool<Postgres>>, req: HttpRequest) -> Result<impl Responder, impl ResponseError> {
     let user = auth(&db_pool, &req).await?;
     let recipes = match crate::db::recipe::get_all_recipes(&db_pool, user).await {
@@ -20,7 +20,7 @@ pub async fn get_all_recipes(db_pool: Data<Pool<Postgres>>, req: HttpRequest) ->
     Ok(Json(recipes))
 }
 
-#[post("/recipe/ai")]
+#[post("/api/recipe/ai")]
 pub async fn get_ai_recipe(db_pool: Data<Pool<Postgres>>, body: Json<RecipeBody>, req: HttpRequest) -> Result<Json<DBRecipe>, impl ResponseError> {
     let _user = auth(&db_pool, &req).await?;
     match crate::ai::get_ai_recipe(body.prompt.clone()).await {
@@ -34,7 +34,7 @@ struct GetRecipe {
     id: i64
 }
 
-#[get("/recipe/{id}")]
+#[get("/api/recipe/{id}")]
 pub async fn get_recipe(db_pool: Data<Pool<Postgres>>, id: web::Path<i64>, req: HttpRequest) -> Result<impl Responder, impl ResponseError> {
     let user = auth(&db_pool, &req).await?;
     match crate::db::recipe::get_recipe(&db_pool, *id, user).await {
@@ -43,7 +43,7 @@ pub async fn get_recipe(db_pool: Data<Pool<Postgres>>, id: web::Path<i64>, req: 
     }
 }
 
-#[post("/recipe/update")]
+#[post("/api/recipe/update")]
 pub async fn update_recipe(db_pool: Data<Pool<Postgres>>, mut body: Json<DBRecipe>, req: HttpRequest) -> Result<impl Responder, impl ResponseError> {
     let _user = auth(&db_pool, &req).await?;
     body.modified = Local::now().format(DB_DATE_FORMAT).to_string();
@@ -53,7 +53,7 @@ pub async fn update_recipe(db_pool: Data<Pool<Postgres>>, mut body: Json<DBRecip
     }
 }
 
-#[post("/recipe")]
+#[post("/api/recipe")]
 pub async fn insert_recipe(db_pool: Data<Pool<Postgres>>, body: Json<DBRecipe>, req: HttpRequest) -> Result<impl Responder, impl ResponseError> {
     let user = auth(&db_pool, &req).await?;
     match crate::db::recipe::insert_recipe(&db_pool, &body, user).await {
@@ -62,7 +62,7 @@ pub async fn insert_recipe(db_pool: Data<Pool<Postgres>>, body: Json<DBRecipe>, 
     }
 }
 
-#[delete("/recipe/{id}")]
+#[delete("/api/recipe/{id}")]
 pub async fn delete_recipe(db_pool: Data<Pool<Postgres>>, id: web::Path<i64>, req: HttpRequest) -> Result<impl Responder, impl ResponseError> {
     let user = auth(&db_pool, &req).await?;
     match crate::db::recipe::delete_recipe(&db_pool, *id, user).await {
