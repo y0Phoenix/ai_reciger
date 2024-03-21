@@ -59,7 +59,7 @@ type ClearRecipesAction = {
 
 type RemoveRecipeAction = {
     type: typeof REMOVE_RECIPE,
-    payload: number
+    payload: string
 }
 
 type RecipeAction = CurrRecipeAction | RecipesAction | ClearRecipesAction | RecipesFailAction | ClearCurrRecipeAction | RemoveRecipeAction;
