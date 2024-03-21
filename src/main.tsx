@@ -5,8 +5,8 @@ import { Provider } from 'react-redux'
 import store from './store.tsx'
 import axios from 'axios'
 
-axios.defaults.baseURL = "http://127.0.0.1:8080/api";
-// axios.defaults.baseURL = "https://reciger.com/api";
+// axios.defaults.baseURL = "http://127.0.0.1:8080/api";
+axios.defaults.baseURL = "https://reciger.com/api";
 axios.defaults.headers.post["Content-Type"] = 'application/json';
 axios.defaults.headers.common["Access-Control-Allow-Origin"] = "http://localhost:5173/";
 
