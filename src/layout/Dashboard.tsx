@@ -1,36 +1,36 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-refresh/only-export-components */
 import { Container, Form, FormControl, InputGroup, Button, Row, Col } from 'react-bootstrap';
 import State from '../types/State';
 import { ConnectedProps, connect } from 'react-redux';
 import React, { useEffect } from 'react';
-import { getRecipeById, getRecipes } from '../actions/recipe';
+import { deleteRecipe, getRecipeById, getRecipes } from '../actions/recipe';
 import { useNavigate } from 'react-router-dom';
+import { showConfirmModal } from '../actions/modal';
 
 const mapStateToProps = (state: State) => ({
     recipes: state.recipe.recipes,
 });
 
-const connector = connect(mapStateToProps, { getRecipes, getRecipeById });
+const connector = connect(mapStateToProps, { getRecipes, getRecipeById, showConfirmModal, deleteRecipe });
 
 type Props = ConnectedProps<typeof connector>;
 
-const DashboardLayout: React.FC<Props> = ({ recipes, getRecipes, getRecipeById }) => {
+const DashboardLayout: React.FC<Props> = ({ recipes, getRecipes, getRecipeById, showConfirmModal, deleteRecipe}) => {
     useEffect(() => {
         getRecipes();
     }, [getRecipes]);
 
     const navigate = useNavigate();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleEditRecipe = (e: any) => {
-        console.log("start");
         e.preventDefault();
-        const id = Number(e.currentTarget.id);
-        if (!isNaN(id)) {
-            console.log("init get");
-            return getRecipeById(id, navigate);
-        }
-        alert("Error");
+        return getRecipeById(e.currentTarget.id, navigate);
+    }
+
+    const handleDeleteRecipe = (e: any) => {
+        e.preventDefault();
+        showConfirmModal(e.currentTarget.id, deleteRecipe);
     }
 
     return (
@@ -58,7 +58,7 @@ const DashboardLayout: React.FC<Props> = ({ recipes, getRecipes, getRecipeById }
                 </Row>
                 {/* <Row xs={1} md={2} lg={3} className="g-4"> */}
                 {recipes.map(recipe => (
-                    <Row className='bg-dark p-4 m-2 text-white rounded-3' style={{width: "1100px"}}>
+                    <Row key={recipe.recipe.id} className='bg-dark p-4 m-2 text-white rounded-3' style={{width: "1100px"}}>
                         <Col>
                             <h4 style={{cursor: "pointer"}} onClick={handleEditRecipe} id={`${recipe.recipe.id}`}>{recipe.recipe.name}</h4>
                         </Col>
@@ -68,7 +68,7 @@ const DashboardLayout: React.FC<Props> = ({ recipes, getRecipes, getRecipeById }
                         <Col>
                             <div>
                                 <Button variant="primary" className="me-2" onClick={handleEditRecipe} id={`${recipe.recipe.id}`}>Edit</Button>
-                                <Button variant="danger">Delete</Button>
+                                <Button variant="danger" onClick={handleDeleteRecipe} id={`${recipe.recipe.id}`}>Delete</Button>
                             </div>
                         </Col>
                         </Row>

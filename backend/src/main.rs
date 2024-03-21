@@ -21,7 +21,7 @@ async fn main() -> std::io::Result<()> {
         let cors = Cors::default()
             .allow_any_origin() // Allow requests from any origin (replace with your specific origin if needed)
             .allow_any_header() // Allow credentials (cookies, authorization headers, etc.)
-            .allowed_methods(vec!["GET", "POST"]) // Allow only specified methods
+            .allowed_methods(vec!["GET", "POST", "DELETE"]) // Allow only specified methods
             .max_age(3600)
         ;
         App::new().wrap(cors).app_data(Data::new(pool.clone()))

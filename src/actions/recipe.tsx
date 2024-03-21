@@ -33,14 +33,11 @@ export const getRecipes = () => async (dispatch: ThunkDispatch<State, undefined,
     }
 };
 
-export const getRecipeById = (id: number, navigate: NavigateFunction) => async (dispatch: ThunkDispatch<State, undefined, RecipeAction>) => {
+export const getRecipeById = (id: string, navigate: NavigateFunction) => async (dispatch: ThunkDispatch<State, undefined, RecipeAction>) => {
     try {
         dispatch(loading());
-        console.log("getting");
         const res = await axios.get(`/recipe/${id}`);
         dispatch(stopLoading());
-        
-        console.log("got");
         navigate(`/recipe/${id}`);
 
         // if (res.data.toasts) setToastFromRes(res.data.toasts, dispatch);
@@ -117,7 +114,7 @@ export const editRecipe = (recipe: Recipe) => async (dispatch: ThunkDispatch<Sta
     }
 };
 
-export const deleteRecipe = (id: number) => async (dispatch: ThunkDispatch<State, undefined, RecipeAction>) => {
+export const deleteRecipe = (id: string, navigate: NavigateFunction) => async (dispatch: ThunkDispatch<State, undefined, RecipeAction>) => {
     try {
         dispatch(loading());
         const res = await axios.delete(`/recipe/${id}`);
@@ -126,9 +123,10 @@ export const deleteRecipe = (id: number) => async (dispatch: ThunkDispatch<State
         // if (res.data.toasts) setToastFromRes(res.data.toasts, dispatch);
 
         dispatch({
-            type: CURR_RECIPE,
+            type: CLEAR_CURR_RECIPE,
             payload: res.data
         });
+        navigate("/dashboard");
     } catch (err: any) {
         dispatch(stopLoading());
         dispatch({

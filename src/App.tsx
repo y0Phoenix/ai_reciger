@@ -11,6 +11,7 @@ import LoginPage from './layout/Login'
 import RegisterPage from './layout/Register'
 import DashboardLayout from './layout/Dashboard'
 import AIModal from './layout/AI'
+import Confirm from './layout/Confirm'
 import { ConnectedProps, connect } from 'react-redux'
 import { loadUser } from './actions/user'
 import React, { useEffect } from 'react'
@@ -41,6 +42,7 @@ const App: React.FC<Props> = ({loadUser}) => {
       <LoginPage />
       <RegisterPage />
       <AIModal />
+      <Confirm />
       <Loading />
       <Routes>
         <Route element={<ProtectedRoutes Protected={false} />}>

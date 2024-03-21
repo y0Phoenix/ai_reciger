@@ -5,20 +5,21 @@ import { Button, Card, Col, Container, Form, Row } from 'react-bootstrap';
 import State from '../types/State';
 import { ConnectedProps, connect } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { clearCurrRecipe, deleteRecipe, editRecipe, getRecipeById, insertRecipe } from '../actions/recipe';
+import { clearCurrRecipe, editRecipe, getRecipeById, insertRecipe } from '../actions/recipe';
 import { Ingredient, Recipe } from '../types/Recipe';
 import LoadingButton from '../components/LoadingButton';
 import { printPage } from '../utils/printPage';
+import { showConfirmModal } from '../actions/modal';
 
 const mapStateToProps = (state: State) => ({
     curr_recipe: state.recipe.currRecipe,
 });
 
-const connector = connect(mapStateToProps, { getRecipeById, clearCurrRecipe, editRecipe, deleteRecipe, insertRecipe });
+const connector = connect(mapStateToProps, { getRecipeById, clearCurrRecipe, editRecipe, insertRecipe, showDeleteModal: showConfirmModal });
 
 type Props = ConnectedProps<typeof connector>;
 
-const RecipePage: React.FC<Props> = ({ curr_recipe, editRecipe, deleteRecipe, getRecipeById, insertRecipe }) => {
+const RecipePage: React.FC<Props> = ({ curr_recipe, editRecipe, getRecipeById, insertRecipe, showDeleteModal }) => {
     const [recipe, setRecipe] = useState<Recipe>(curr_recipe);
     const { pathname } = useLocation();
 
@@ -42,13 +43,24 @@ const RecipePage: React.FC<Props> = ({ curr_recipe, editRecipe, deleteRecipe, ge
         }));
     };
 
-    const id = Number(pathname.split('/recipe/').join(''));
+    const id = pathname.split('/recipe/').join('');
 
     const navigate = useNavigate();
     
     const handleDelete = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         e.preventDefault();
-        deleteRecipe(curr_recipe.recipe.id)
+        showDeleteModal(recipe.recipe.id, showDeleteModal);
+    };
+
+    const handleAddIngredient = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        e.preventDefault();
+        setRecipe({ ...recipe, ingredients: [...recipe.ingredients, new Ingredient()] })
+    };
+
+    const handleDeleteIngredient = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        e.preventDefault();
+        const ingredients = recipe.ingredients.splice(Number(e.currentTarget.id), 1);
+        setRecipe({ ...recipe, ingredients });
     };
 
     const handlePrint = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -57,14 +69,14 @@ const RecipePage: React.FC<Props> = ({ curr_recipe, editRecipe, deleteRecipe, ge
     }
 
     const handleSave = () => {
-        if (isNaN(id) || id == 0 || id == -1) {
+        if (id === "new") {
             return insertRecipe(recipe, navigate);
         }
         editRecipe(recipe);
     }
 
     useEffect(() => {
-        if (curr_recipe.recipe.id == -1) getRecipeById(id, navigate);
+        if (curr_recipe.recipe.id === "new") getRecipeById(id, navigate);
         return () => {
             // clearCurrRecipe();
         }
@@ -89,7 +101,7 @@ const RecipePage: React.FC<Props> = ({ curr_recipe, editRecipe, deleteRecipe, ge
                         <Col>
                             <Form.Group>
                                 <Form.Label>Servings</Form.Label>
-                                <Form.Control type="number" value={recipe.recipe.servings} name='servings' onChange={handleChange}/>
+                                <Form.Control type="text" value={recipe.recipe.servings} name='servings' onChange={handleChange}/>
                             </Form.Group>
                         </Col>
                         <Col style={{marginTop: "31px"}}>
@@ -124,8 +136,17 @@ const RecipePage: React.FC<Props> = ({ curr_recipe, editRecipe, deleteRecipe, ge
                                     {i ==0 && <Form.Label>Notes</Form.Label>}
                                     <Form.Control type="text" value={ingredient.notes} name={`ingredientNotes${i}`} onChange={(e: any) => handleIngredientChange(e, i, 'notes')}/>
                                 </Col>
+                                <Col className='d-grid'>
+                                    {i == 0 && <Form.Label>Actions</Form.Label>}
+                                    <Button variant='danger' id={`${i}`} onClick={handleDeleteIngredient}>
+                                        Delete <i className='fa-solid fa-trash-can'></i>
+                                    </Button>
+                                </Col>
                             </Row>
                         ))}
+                        <Button variant='primary' onClick={handleAddIngredient}>
+                            Add Ingredient <i className='fa-solid fa-plus'></i>
+                        </Button>
                         </Container>
                     </Row>
                     <Form.Group className="mb-3">

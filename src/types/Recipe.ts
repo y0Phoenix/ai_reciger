@@ -9,7 +9,7 @@ export class Recipe {
     recipe: RecipeInfo = {
         name: "",
         servings: "",
-        id: ""
+        id: "new"
     }
     instructions: string = ""
     ingredients: Ingredient[] = [{
@@ -28,11 +28,11 @@ type RecipeInfo = {
     id: string
 }
 
-type Ingredient = {
-    name: string,
-    quantity: string,
-    unit: string,
-    notes: string
+export class Ingredient {
+    name: string = ""
+    quantity: string = ""
+    unit: string = ""
+    notes: string = ""
 }
 
 type CurrRecipeAction = {
@@ -64,4 +64,4 @@ type RemoveRecipeAction = {
 
 type RecipeAction = CurrRecipeAction | RecipesAction | ClearRecipesAction | RecipesFailAction | ClearCurrRecipeAction | RemoveRecipeAction;
 
-export type { RecipeState, Ingredient, CurrRecipeAction, RecipeAction, RecipesAction, RecipeInfo, ClearRecipesAction, RecipesFailAction, ClearCurrRecipeAction, RemoveRecipeAction }
+export type { RecipeState, CurrRecipeAction, RecipeAction, RecipesAction, RecipeInfo, ClearRecipesAction, RecipesFailAction, ClearCurrRecipeAction, RemoveRecipeAction }
